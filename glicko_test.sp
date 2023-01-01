@@ -130,16 +130,16 @@ public Action Command_Run(int iClient, int iArgs)
 	float fGlicko_d_Full = Glicko_d(fSum_d);
 	ReplyToCommand(iClient, "Player: d = %.2f", fGlicko_d_Full);
 
-	float fFinalRD = Glicko_FinalRD(iClient, g_player, fGlicko_d_Full);
+	float fFinalRD = Glicko_FinalRD(g_player, fGlicko_d_Full);
 	ReplyToCommand(iClient, "\nPlayer: RD' = %.2f", fFinalRD);
 
 	float fSum_FinalRating;
 	for (int i = 0; i <= sizeof(g_Opponents[]); i++)
 	{
-		fSum_FinalRating += Glicko_sum_FinalRating(iClient, g_player, g_Opponents[i], PlayerResults[i]);
+		fSum_FinalRating += Glicko_sum_FinalRating(g_player, g_Opponents[i], PlayerResults[i]);
 	}
 
-	float fFinalRating = Glicko_FinalRating(iClient, g_player, fGlicko_d_Full, fSum_FinalRating);
+	float fFinalRating = Glicko_FinalRating(g_player, fGlicko_d_Full, fSum_FinalRating);
 	ReplyToCommand(iClient, "Player: r' = %.2f", fFinalRating);
 
 	return Plugin_Handled;

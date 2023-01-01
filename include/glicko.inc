@@ -33,18 +33,24 @@
 
 /* Activate this variable if you want to create modified PlayerInfo.
  * This is useful if you want to add more variables to the PlayerInfo struct.
- * You can also use this to create a custom PlayerInfo struct.
  *
  * #define CUSTOM_PLAYERINFO
  */
 
-#define DEFAULT_RATING	  1500.0	// DEFAULT 1500.0
-#define DEFAULT_DEVIATION 350.0		// DEFAULT 350.0
+/* Activate this variable if you want to create modified constants.
+ *
+ * #define CUSTOM_CONSTANTS
+ */
 
-#define E_NUMBER		  2.71828182845904523536028747135266249775724709369995	  // Euler's number
-#define INITIAL_DEVIATION 350.0													  // DEFAULT 350.0
-#define MEAN_DEVIATION	  50.0													  // DEFAULT 50.0
-#define POINT_PERIODS	  100.0													  // DEFAULT 100.0
+#if !defined CUSTOM_CONSTANTS
+	#define DEFAULT_RATING	  1500.0	// DEFAULT 1500.0
+	#define DEFAULT_DEVIATION 350.0		// DEFAULT 350.0
+
+	#define E_NUMBER		  2.71828182845904523536028747135266249775724709369995	  // Euler's number
+	#define INITIAL_DEVIATION 350.0													  // DEFAULT 350.0
+	#define MEAN_DEVIATION	  50.0													  // DEFAULT 50.0
+	#define POINT_PERIODS	  100.0													  // DEFAULT 100.0
+#endif
 
 /**
  * Define the possible outcomes.
@@ -155,7 +161,7 @@ stock float Glicko_sum_d(PlayerInfo Player, PlayerInfo Opponent)
  * Defines the value of d^2. The sum responds to the number of Opponents in the scoring period.
  *
  * @param fSum_d       value of Σ.
- * @return             value of d (d_Full).
+ * @return             value of d.
  * @note               d = √( 1 / (q^2 * Σ( g(RD)^2 * E(s|r,rj,RDj) * (1 - E(s|r,rj,RDj)) ) ) )
  */
 stock float Glicko_d(float fSum_d)
@@ -167,17 +173,17 @@ stock float Glicko_d(float fSum_d)
  * Defines the value of RD'.
  *
  * @param Player       Player profile.
- * @param d_Full       value of d.
+ * @param Glicko_d    value of d.
  * @return             value of RD'.
  * @note               RD' = √( 1 / (1 / RD^2 + 1 / d^2) )
  */
-stock float Glicko_FinalRD(int client, PlayerInfo Player, float d_Full)
+stock float Glicko_FinalRD(PlayerInfo Player, float Glicko_d)
 {
 	float
-		fSquare_RD	   = 1.0 / Square(Player.deviation),	// 1 / RD^2
-		fSquare_d_Full = 1.0 / Square(d_Full);				// 1 / d^2
+		fSquare_RD		 = 1.0 / Square(Player.deviation),	  // 1 / RD^2
+		fSquare_Glicko_d = 1.0 / Square(Glicko_d);			  // 1 / d^2
 
-	return SquareRoot(1.0 / (fSquare_RD + fSquare_d_Full));
+	return SquareRoot(1.0 / (fSquare_RD + fSquare_Glicko_d));
 }
 
 /**
@@ -190,7 +196,7 @@ stock float Glicko_FinalRD(int client, PlayerInfo Player, float d_Full)
  * @note               Σ( g(RD) * (s - E(s|r,rj,RDj)) )
  * @note               Σ = Glicko_sum_FinalRating
  */
-stock float Glicko_sum_FinalRating(int client, PlayerInfo Player, PlayerInfo Opponent, MatchResults Result)
+stock float Glicko_sum_FinalRating(PlayerInfo Player, PlayerInfo Opponent, MatchResults Result)
 {
 	float
 		f_g = Glicko_g(Opponent),			 // g(RD)
@@ -203,19 +209,19 @@ stock float Glicko_sum_FinalRating(int client, PlayerInfo Player, PlayerInfo Opp
  * Defines the value of r'.
  *
  * @param Player       Player profile.
- * @param d_Full       value of d.
+ * @param Glicko_d     value of d.
  * @param fSum_Rating  value of Σ.
  * @return             value of r'.
  * @note               r' = r + q * d^2 * Σ( g(RD) * (s - E(s|r,rj,RDj)) )
  */
-stock float Glicko_FinalRating(int client, PlayerInfo Player, float d_Full, float fSum_Rating)	  // r'
+stock float Glicko_FinalRating(PlayerInfo Player, float Glicko_d, float fSum_Rating)
 {
 	float
-		fGlicko_q	   = Glicko_q(),
-		fGlicko_RD	   = 1.0 / Square(Glicko_RD(Player)),	 // 1 / RD^2
-		fd_Full		   = 1.0 / Square(d_Full);				 // 1 / d^2
+		fGlicko_q  = Glicko_q(),
+		fGlicko_RD = 1.0 / Square(Glicko_RD(Player)),	 // 1 / RD^2
+		fGlicko_d  = 1.0 / Square(Glicko_d);			 // 1 / d^2
 
-	return Player.rating + (fGlicko_q / (fGlicko_RD + fd_Full)) * fSum_Rating;
+	return Player.rating + (fGlicko_q / (fGlicko_RD + fGlicko_d)) * fSum_Rating;
 }
 
 /**
