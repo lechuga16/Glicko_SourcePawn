@@ -42,7 +42,7 @@
  * p | r    | RD  | g(RD)  | E(s|r,rj,RDj)
  * 1 | 1500 | 200 | 0.      | 0.
  */
-PlayerInfo	 g_player = { DEFAULT_RATING, 200.0 };
+PlayerInfo	 g_player = { INITIAL_RATING, 200.0 };
 
 /**
  * j | r    | RD  | g(RD)  |  E(s|r,rj,RDj) | outcome (s)
